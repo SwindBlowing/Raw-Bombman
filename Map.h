@@ -68,6 +68,7 @@ bool Map::movePlayer(int role, int moveType, std::pair<int, int> location)
     int s = location.first, t = location.second;
     if (s + dx[moveType] < 1 || s + dx[moveType] > n || t + dy[moveType] < 1 || t + dy[moveType] > m) return 0;
     if (ch[s + dx[moveType]][t + dy[moveType]] == '*' || ch[s + dx[moveType]][t + dy[moveType]] == '#') return 0;
+    if (ch[s + dx[moveType]][t + dy[moveType]] >= '1' && ch[s + dx[moveType]][t + dy[moveType]] <= '4') return 0;
     if (bombMap[s][t] == '!') ch[s][t] = bombMap[s][t];
     else ch[s][t] = preCh[s][t];
     ch[s + dx[moveType]][t + dy[moveType]] = role + '0';
