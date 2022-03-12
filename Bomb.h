@@ -8,16 +8,24 @@ private:
     std::pair<int, int> location;
     double putTime, bombTime;
     bool existed, overed;
+    int power, master;
 public:
     bool hasBombed(void);
-    void init(std::pair<int, int> location);
+    void init(std::pair<int, int> location, int, int);
     std::pair<int, int> get_location();
     bool isExisted(void);
     void bombBomb(void);
     bool hasOver(void);
     void overing(void);
     void startToOver(void);
+    int getPower(void);
+    int getMaster(void);
 };
+
+int Bomb::getMaster(void)
+{
+    return master;
+}
 void Bomb::startToOver(void)
 {
     overed = 1;
@@ -27,10 +35,12 @@ void Bomb::bombBomb(void)
 {
     existed = 0;
 }
-void Bomb::init(std::pair<int, int> location)
+void Bomb::init(std::pair<int, int> location, int power, int master)
 {
+    this->power = power;
     this->location = location;
     existed = 1;
+    this->master = master;
     putTime = (double)clock();
 }
 bool Bomb::hasBombed(void)
@@ -55,5 +65,9 @@ bool Bomb::hasOver(void)
 void Bomb::overing(void)
 {
     overed = 0;
+}
+int Bomb::getPower(void)
+{
+    return power;
 }
 #endif // BOMB_H

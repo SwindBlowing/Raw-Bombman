@@ -17,17 +17,23 @@ public:
     Map(int x, int y);
     void generateMap(void);
     void printMap(void);
-    bool movePlayer(int role, int moveType, std::pair<int, int> location);
+    int movePlayer(int role, int moveType, std::pair<int, int> location);
     void bombPut(std::pair<int, int> location);
-    void bombBomb(std::pair<int, int> location, int power);
+    int bombBomb(std::pair<int, int> location, int power);
     void bombLeft(std::pair<int, int> location, int power);
     bool notStep(std::pair<int, int> location);
+    inline bool check(int x, int y);
 };
+
 Map::Map(int x, int y)
 {
     n = x;
     m = y;
     generateMap();
+}
+inline bool Map::check(int x, int y)
+{
+    return x >= 1 && x <= n && y >= 1 && y <= m;
 }
 void Map::generateMap(void)
 {
@@ -36,6 +42,7 @@ void Map::generateMap(void)
         for (int j = 1; j <= m; j++) {
             bombMap[i][j] = ' ';
             preCh[i][j] = ' ';
+            propsType[i][j] = ' ';
             if (i + j <= 3 || i + m - j <= 2 || n - i + j <= 2 || n - i + m - j <= 1) {
                 ch[i][j] = ' ';
                 continue;
@@ -48,7 +55,7 @@ void Map::generateMap(void)
                 p = rand() % 10;
                 if (!p) {
                     p = rand() % 2;
-                    propsType[i][j] = p;
+                    propsType[i][j] = 'A' + p;
                 }
             }
         }
@@ -63,7 +70,7 @@ void Map::printMap(void)
         putchar('\n');
     }
 }
-bool Map::movePlayer(int role, int moveType, std::pair<int, int> location)
+int Map::movePlayer(int role, int moveType, std::pair<int, int> location)
 {
     int s = location.first, t = location.second;
     if (s + dx[moveType] < 1 || s + dx[moveType] > n || t + dy[moveType] < 1 || t + dy[moveType] > m) return 0;
@@ -71,26 +78,35 @@ bool Map::movePlayer(int role, int moveType, std::pair<int, int> location)
     if (ch[s + dx[moveType]][t + dy[moveType]] >= '1' && ch[s + dx[moveType]][t + dy[moveType]] <= '4') return 0;
     if (bombMap[s][t] == '!') ch[s][t] = bombMap[s][t];
     else ch[s][t] = preCh[s][t];
+    char usedCh = ch[s + dx[moveType]][t + dy[moveType]];
     ch[s + dx[moveType]][t + dy[moveType]] = role + '0';
- //   int nowProps = propsType[s + dx[moveType]][t + dy[moveType]];
- //   propsType[s + dx[moveType]][t + dy[moveType]] = 0;
-    return 1;
+    return usedCh == ' ' ? 1 : (usedCh - 'A' + 2);
 }
 void Map::bombPut(std::pair<int, int> location)
 {
     int s = location.first, t = location.second;
     bombMap[s][t] = '!';
 }
-void Map::bombBomb(std::pair<int, int> location, int power)
+int Map::bombBomb(std::pair<int, int> location, int power)
 {
+    int num = 0;
     int s = location.first, t = location.second;
     bombing[s][t] = 1;
-    for (int i = 1; i <= power; i++) {
-        if (t + i <= m && ch[s][t + i] != '#') preCh[s][t + i] = ch[s][t + i], ch[s][t + i] = '-', bombing[s][t + i] = 1;
-        if (t - i >= 1 && ch[s][t - i] != '#') preCh[s][t - i] = ch[s][t - i], ch[s][t - i] = '-', bombing[s][t - i] = 1;
-        if (s + i <= n && ch[s + i][t] != '#') preCh[s + i][t] = ch[s + i][t], ch[s + i][t] = '|', bombing[s + i][t] = 1;
-        if (s - i >= 1 && ch[s - i][t] != '#') preCh[s - i][t] = ch[s - i][t], ch[s - i][t] = '|', bombing[s - i][t] = 1;
-    }
+    for (int k = 0; k < 4; k++)
+        for (int i = 1; i <= power; i++)
+            if (check(s + i * dx[k], t + i * dy[k])) {
+                if (ch[s + i * dx[k]][t + i * dy[k]] == '#') break;
+                if (ch[s + i * dx[k]][t + i * dy[k]] == '*') num++;
+                preCh[s + i * dx[k]][t + i * dy[k]] = ch[s + i * dx[k]][t + i * dy[k]];
+                if (k == 0 || k == 2) ch[s + i * dx[k]][t + i * dy[k]] = '-';
+                else ch[s + i * dx[k]][t + i * dy[k]] = '|';
+                bombing[s + i * dx[k]][t + i * dy[k]] = 1;
+            }
+    for (int k = 0; k < 4; k++)
+        for (int i = 1; i <= power; i++)
+            if (check(s + i * dx[k], t + i * dy[k]) && preCh[s + i * dx[k]][t + i * dy[k]] == '!')
+                preCh[s + i * dx[k]][t + i * dy[k]] = ' ';
+    return num;
 }
 void Map::bombLeft(std::pair<int, int> location, int power)
 {
@@ -98,18 +114,22 @@ void Map::bombLeft(std::pair<int, int> location, int power)
     bombing[s][t] = 0;
     bombMap[s][t] = ' ';
     ch[s][t] = ' ';
-    for (int i = 1; i <= power; i++) {
-        if (t + i <= m && ch[s][t + i] != '#') ch[s][t + i] = preCh[s][t + i], preCh[s][t + i] = ' ', bombing[s][t + i] = 0;
-        if (t - i >= 1 && ch[s][t - i] != '#') ch[s][t - i] = preCh[s][t - i], preCh[s][t - i] = ' ', bombing[s][t - i] = 0;
-        if (s + i <= n && ch[s + i][t] != '#') ch[s + i][t] = preCh[s + i][t], preCh[s + i][t] = ' ', bombing[s + i][t] = 0;
-        if (s - i >= 1 && ch[s - i][t] != '#') ch[s - i][t] = preCh[s - i][t], preCh[s - i][t] = ' ', bombing[s - i][t] = 0;
-    }
-    for (int i = 1; i <= power; i++) {
-        if (t + i <= m && ch[s][t + i] == '*') ch[s][t + i] = ' ';
-        if (t - i >= 1 && ch[s][t - i] == '*') ch[s][t - i] = ' ';
-        if (s + i <= n && ch[s + i][t] == '*') ch[s + i][t] = ' ';
-        if (s - i >= 1 && ch[s - i][t] == '*') ch[s - i][t] = ' ';
-    }
+    for (int k = 0; k < 4; k++)
+        for (int i = 1; i <= power; i++)
+            if (check(s + i * dx[k], t + i * dy[k])) {
+                 if (ch[s + i * dx[k]][t + i * dy[k]] == '#') break;
+                 ch[s + i * dx[k]][t + i * dy[k]] = preCh[s + i * dx[k]][t + i * dy[k]];
+                 preCh[s + i * dx[k]][t + i * dy[k]] = ' ';
+                 bombing[s + i * dx[k]][t + i * dy[k]] = 0;
+            }
+    for (int k = 0; k < 4; k++)
+        for (int i = 1; i <= power; i++)
+            if (check(s + i * dx[k], t + i * dy[k])) {
+               if (ch[s + i * dx[k]][t + i * dy[k]] == '*') {
+                   ch[s + i * dx[k]][t + i * dy[k]] = propsType[s + i * dx[k]][t + i * dy[k]];
+               }
+               else if (ch[s + i * dx[k]][t + i * dy[k]] == '#') break;
+            }
 }
 bool Map::notStep(std::pair<int, int> location)
 {
