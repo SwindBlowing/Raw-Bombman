@@ -4,6 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
+        Bomb.cpp \
+        Map.cpp \
+        Player.cpp \
         main.cpp
 
 HEADERS += \
