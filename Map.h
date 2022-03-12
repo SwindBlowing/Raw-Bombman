@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <utility>
 #include <cstring>
+#include <cmath>
 class Map
 {
 private:
@@ -13,16 +14,18 @@ private:
     bool bombing[205][205];
     int propsType[205][205];
     const int dx[4] = {0, -1, 0, 1}, dy[4] = {-1, 0, 1, 0};
+    void generateMap(void);
+    inline bool check(int x, int y);
 public:
     Map(int x, int y);
-    void generateMap(void);
     void printMap(void);
     int movePlayer(int role, int moveType, std::pair<int, int> location);
-    void bombPut(std::pair<int, int> location);
+    bool bombPut(std::pair<int, int> location);
     int bombBomb(std::pair<int, int> location, int power);
     void bombLeft(std::pair<int, int> location, int power);
     bool notStep(std::pair<int, int> location);
-    inline bool check(int x, int y);
+    int bestMove(std::pair<int, int> location);
+    bool canStep(int x, int y);
 };
 
 Map::Map(int x, int y)
@@ -30,6 +33,38 @@ Map::Map(int x, int y)
     n = x;
     m = y;
     generateMap();
+}
+bool Map::canStep(int x,int y)
+{
+    return check(x, y) && ch[x][y] != '#' && ch[x][y] != '*';
+}
+int Map::bestMove(std::pair<int, int> location)
+{
+    int s = location.first, t = location.second;
+    double lastx = 0, lasty = 0;
+    for (int i = -4; i <= 4; i++)
+        for (int j = -4; j <= 4; j++)
+            if (check(s + i, t + j) && bombMap[s + i][t + j] == '!') {
+                int dis = abs(i) + abs(j);
+                if (!dis) continue;
+                lastx += (double)i / dis;
+                lasty += (double)j / dis;
+            }
+    if (fabs(lastx) > fabs(lasty) && lastx > 0 && canStep(s - 1, t)) return 0;
+    else if (fabs(lastx) > fabs(lasty) && lastx < 0 && canStep(s + 1, t)) return 2;
+    else if (fabs(lastx) < fabs(lasty) && lasty > 0 && canStep(s, t - 1)) return 1;
+    else if (fabs(lastx) < fabs(lasty) && lasty < 0 && canStep(s, t + 1)) return 3;
+    else {
+        for (int p = 0; p < 4; p++)
+            if (canStep(s + dx[p], t + dy[p])) {
+                if (p == 0 && fabs(lastx) >= fabs(lasty) && lastx >= 0) return p;
+                if (p == 1 && fabs(lastx) <= fabs(lasty) && lasty >= 0) return p;
+                if (p == 2 && fabs(lastx) >= fabs(lasty) && lastx <= 0) return p;
+                if (p == 3 && fabs(lastx) <= fabs(lasty) && lasty <= 0) return p;
+            }
+    }
+    int p = rand() % 4;
+    return p;
 }
 inline bool Map::check(int x, int y)
 {
@@ -82,10 +117,12 @@ int Map::movePlayer(int role, int moveType, std::pair<int, int> location)
     ch[s + dx[moveType]][t + dy[moveType]] = role + '0';
     return usedCh == ' ' ? 1 : (usedCh - 'A' + 2);
 }
-void Map::bombPut(std::pair<int, int> location)
+bool Map::bombPut(std::pair<int, int> location)
 {
     int s = location.first, t = location.second;
+    if (bombMap[s][t] == '!') return 0;
     bombMap[s][t] = '!';
+    return 1;
 }
 int Map::bombBomb(std::pair<int, int> location, int power)
 {
@@ -104,7 +141,7 @@ int Map::bombBomb(std::pair<int, int> location, int power)
             }
     for (int k = 0; k < 4; k++)
         for (int i = 1; i <= power; i++)
-            if (check(s + i * dx[k], t + i * dy[k]) && preCh[s + i * dx[k]][t + i * dy[k]] == '!')
+            if (check(s + i * dx[k], t + i * dy[k]) && (preCh[s + i * dx[k]][t + i * dy[k]] == '!' || (preCh[s + i * dx[k]][t + i * dy[k]] >= '1' && preCh[s + i * dx[k]][t + i * dy[k]] <= '4')))
                 preCh[s + i * dx[k]][t + i * dy[k]] = ' ';
     return num;
 }

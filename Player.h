@@ -12,7 +12,7 @@ private:
     char symbol;
     int power;
     double speed;
-    double startToPowerUp, lastMoveTime, startToSpeedUp;
+    double startToPowerUp, lastMoveTime, startToSpeedUp, lastPutBomb;
     const int dx[4] = {0, -1, 0, 1}, dy[4] = {-1, 0, 1, 0};
     void speedUp(void);
     void putPower(void);
@@ -30,8 +30,24 @@ public:
     void checkBenefit(void);
     void PointUp(int t);
     void printPoint(void);
+    int getPoint(void);
+    bool canPutAgain(void);
+    void putBomb(void);
 };
 
+bool Player::canPutAgain(void)
+{
+    double nowTime = (double)clock();
+    return nowTime - lastPutBomb > 3000;
+}
+void Player::putBomb(void)
+{
+    lastPutBomb = (double)clock();
+}
+int Player::getPoint(void)
+{
+    return point;
+}
 void Player::printPoint(void)
 {
     printf("The score of Player %c is %d\n", symbol, point);
