@@ -1,41 +1,31 @@
 #include "Map.h"
+struct tmp
+{
+    std::pair<int, int> location;
+    int fromPoint;
+};
 Map::Map(int x, int y)
 {
     n = x;
     m = y;
     generateMap();
 }
-bool Map::canStep(int x,int y)
+void Map::dfs(int x, int y)
 {
-    return check(x, y) && ch[x][y] != '#' && ch[x][y] != '*';
+    extern bool vis[205][205];
+    vis[x][y] = 1;
+    for (int k = 0; k < 4; k++)
+        if (check(x + dx[k], y + dy[k]) && !vis[x + dx[k]][y + dy[k]] && ch[x + dx[k]][y + dy[k]] != '#') dfs(x + dx[k], y + dy[k]);
+    return ;
 }
-int Map::bestMove(std::pair<int, int> location)
+bool Map::checkMap()
 {
-    int s = location.first, t = location.second;
-    double lastx = 0, lasty = 0;
-    for (int i = -4; i <= 4; i++)
-        for (int j = -4; j <= 4; j++)
-            if (check(s + i, t + j) && bombMap[s + i][t + j] == '!') {
-                int dis = abs(i) + abs(j);
-                if (!dis) continue;
-                lastx += (double)i / dis;
-                lasty += (double)j / dis;
-            }
-    if (fabs(lastx) > fabs(lasty) && lastx > 0 && canStep(s - 1, t)) return 0;
-    else if (fabs(lastx) > fabs(lasty) && lastx < 0 && canStep(s + 1, t)) return 2;
-    else if (fabs(lastx) < fabs(lasty) && lasty > 0 && canStep(s, t - 1)) return 1;
-    else if (fabs(lastx) < fabs(lasty) && lasty < 0 && canStep(s, t + 1)) return 3;
-    else {
-        for (int p = 0; p < 4; p++)
-            if (canStep(s + dx[p], t + dy[p])) {
-                if (p == 0 && fabs(lastx) >= fabs(lasty) && lastx >= 0) return p;
-                if (p == 1 && fabs(lastx) <= fabs(lasty) && lasty >= 0) return p;
-                if (p == 2 && fabs(lastx) >= fabs(lasty) && lastx <= 0) return p;
-                if (p == 3 && fabs(lastx) <= fabs(lasty) && lasty <= 0) return p;
-            }
-    }
-    int p = rand() % 4;
-    return p;
+    extern bool vis[205][205];
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            vis[i][j] = 0;
+    dfs(1, 1);
+    return (vis[1][m] && vis[n][1] && vis[n][m]);
 }
 inline bool Map::check(int x, int y)
 {
@@ -43,30 +33,32 @@ inline bool Map::check(int x, int y)
 }
 void Map::generateMap(void)
 {
-    srand((unsigned)time(NULL));
-    for (int i = 1; i <= n; i++)
-        for (int j = 1; j <= m; j++) {
-            bombMap[i][j] = ' ';
-            preCh[i][j] = ' ';
-            propsType[i][j] = ' ';
-            if (i + j <= 3 || i + m - j <= 2 || n - i + j <= 2 || n - i + m - j <= 1) {
-                ch[i][j] = ' ';
-                continue;
-            }
-            int p = rand() % 10;
-            if (p < 2) ch[i][j] = '#';
-            else if (p < 5) ch[i][j] = ' ';
-            else {
-                ch[i][j] = '*';
-                p = rand() % 10;
-                if (!p) {
-                    p = rand() % 2;
-                    propsType[i][j] = 'A' + p;
+    do {
+        srand((unsigned)time(NULL));
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= m; j++) {
+                bombMap[i][j] = ' ';
+                preCh[i][j] = ' ';
+                propsType[i][j] = ' ';
+                if (i + j <= 3 || i + m - j <= 2 || n - i + j <= 2 || n - i + m - j <= 1) {
+                    ch[i][j] = ' ';
+                    continue;
+                }
+                int p = rand() % 10;
+                if (p < 2) ch[i][j] = '#';
+                else if (p < 7) ch[i][j] = ' ';
+                else {
+                    ch[i][j] = '*';
+                    p = rand() % 10;
+                    if (!p) {
+                        p = rand() % 2;
+                        propsType[i][j] = 'A' + p;
+                    }
                 }
             }
-        }
-    ch[1][1] = '1'; ch[1][m] = '2';
-    ch[n][1] = '3'; ch[n][m] = '4';
+        ch[1][1] = '1'; ch[1][m] = '2';
+        ch[n][1] = '3'; ch[n][m] = '4';
+    }while (!checkMap());
 }
 void Map::printMap(void)
 {
@@ -143,4 +135,60 @@ bool Map::notStep(std::pair<int, int> location)
 {
     int s = location.first, t = location.second;
     return bombing[s][t];
+}
+int Map::getVal(std::pair<int, int> location)
+{
+    int s = location.first, t = location.second;
+    int val = 0;
+    if (!check(s, t) || bombing[s][t]) return 20000;
+    if (ch[s][t] == '*' || ch[s][t] == '#') return 10000;
+    for (int i = -3; i <= 3; i++)
+        for (int j = -3; j <= 3; j++) {
+            int nowx = s + i, nowy = t + j;
+            if (check(nowx, nowy) && bombMap[nowx][nowy] == '!') {
+                for (int k = 0; k <= 4; k++)
+                    if ((s == nowx && abs(t - nowy) == k) || (abs(s - nowx) == k && t == nowy)) val += (5 - k) * 25;
+            }
+        }
+    return val;
+}
+bool Map::existSoftWallOrPlayers(std::pair<int, int> location, int len)
+{
+    int s = location.first, t = location.second;
+    for (int i = 1; i <= len; i++)
+        for (int k = 0; k < 4; k++)
+            if (check(s + i * dx[k], t + i * dy[k]) && ch[s + i * dx[k]][t + i * dy[k]] == '*')
+                return 1;
+            else if (check(s + i * dx[k], t + i * dy[k]) && ch[s + i * dx[k]][t + i * dy[k]] >= '1' && ch[s + i * dx[k]][t + i * dy[k]] <= '4')
+                return 1;
+    return 0;
+}
+int Map::shortestPath(std::pair<int, int> location1, std::pair<int, int> location2)
+{
+    int s = location1.first, t = location1.second;
+    std::queue<tmp> Q;
+    while (!Q.empty()) Q.pop();
+    extern bool vis[205][205];
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            vis[i][j] = 0;
+    vis[s][t] = 1;
+    for (int k = 0; k < 4; k++)
+        if (check(s + dx[k], t + dy[k]) && ch[s + dx[k]][t + dy[k]] != '#') {
+            Q.push((tmp){{s + dx[k], t + dy[k]}, k});
+            vis[s + dx[k]][t + dy[k]] = 1;
+        }
+    while (!Q.empty()) {
+        tmp now = Q.front();
+        Q.pop();
+        if (now.location == location2) return now.fromPoint;
+        for (int k = 0; k < 4; k++) {
+            int nowx = now.location.first, nowy = now.location.second;
+            if (check(nowx + dx[k], nowy + dy[k]) && !vis[nowx + dx[k]][nowy + dy[k]] && ch[nowx + dx[k]][nowy + dy[k]] != '#') {
+                Q.push((tmp){{nowx + dx[k], nowy + dy[k]}, now.fromPoint});
+                vis[nowx + dx[k]][nowy + dy[k]] = 1;
+            }
+        }
+    }
+    return -1;
 }

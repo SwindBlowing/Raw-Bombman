@@ -6,7 +6,8 @@
 #include "Bomb.h"
 using namespace std;
 int n = 20, m = 20;
-Player p[5] = {Player(0, 0, '0'), Player(1, 1, '1'), Player(1, m, '2'), Player(n, 1, '3'), Player(n, m, '4')};
+bool vis[205][205];
+Player p[5] = {Player(0, 0, 0), Player(1, 1, 1), Player(1, m, 2), Player(n, 1, 3), Player(n, m, 4)};
 Map M(n, m);
 Bomb b[20];
 map<char, int> mapping;
@@ -16,7 +17,7 @@ void deal_with_timer(void);
 void init(void);
 void display(void);
 int getWinner(void);
-int main()
+int main(void)
 {
     init();
     display();
@@ -93,19 +94,8 @@ void deal_with_timer(void)
 {
     for (int i = 3; i <= 4; i++)
         if (!p[i].isDead()){
-            if (p[i].canPutAgain() && M.bombPut(p[i].get_location()) ) {
-                p[i].putBomb();
-                bombNum = (bombNum + 1) % 20;
-                b[bombNum].init(p[i].get_location(), p[i].getPower(), i);
-                display();
-            }
-            //int pro = M.bestMove(p[i].get_location());
-            int pro = rand() % 4;
-            if (p[i].canMove()) {
-                int now = M.movePlayer(i, pro, p[i].get_location());
-                p[i].getBenefit(now);
-                if (now) p[i].Move(pro), display();
-            }
+            if (p[i].robotPutBomb()) display();
+            if (p[i].robotMove()) display();
         }
     for (int i = 1; i <= 4; i++)
         if (!p[i].isDead()){

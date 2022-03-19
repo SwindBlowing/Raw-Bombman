@@ -1,11 +1,12 @@
 #ifndef MAP_H
 #define MAP_H
-#include<ctime>
+#include <ctime>
 #include <cstdlib>
 #include <cstdio>
 #include <utility>
 #include <cstring>
 #include <cmath>
+#include <queue>
 class Map
 {
 private:
@@ -18,13 +19,16 @@ private:
     inline bool check(int x, int y);
 public:
     Map(int x, int y);
+    void dfs(int x, int y);
+    bool checkMap(void);
     void printMap(void);
     int movePlayer(int role, int moveType, std::pair<int, int> location);
     bool bombPut(std::pair<int, int> location);
     int bombBomb(std::pair<int, int> location, int power);
     void bombLeft(std::pair<int, int> location, int power);
     bool notStep(std::pair<int, int> location);
-    int bestMove(std::pair<int, int> location);
-    bool canStep(int x, int y);
+    int getVal(std::pair<int, int> location);
+    bool existSoftWallOrPlayers(std::pair<int, int> location, int len);
+    int shortestPath(std::pair<int, int> location1, std::pair<int, int> location2);
 };
 #endif // MAP_H
