@@ -1,8 +1,4 @@
 #include "Bomb.h"
-int Bomb::getMaster(void)
-{
-    return master;
-}
 void Bomb::startToOver(void)
 {
     overed = 1;
@@ -10,7 +6,12 @@ void Bomb::startToOver(void)
 }
 void Bomb::bombBomb(void)
 {
+    extern Map M;
+    extern Player p[5];
     existed = 0;
+    startToOver();
+    int num = M.bombBomb(location, power);
+    p[master].PointUp(num);
 }
 void Bomb::init(std::pair<int, int> location, int power, int master)
 {
@@ -41,7 +42,9 @@ bool Bomb::hasOver(void)
 }
 void Bomb::overing(void)
 {
+    extern Map M;
     overed = 0;
+    M.bombLeft(location, power);
 }
 int Bomb::getPower(void)
 {

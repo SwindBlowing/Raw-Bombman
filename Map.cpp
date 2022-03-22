@@ -136,12 +136,14 @@ bool Map::notStep(std::pair<int, int> location)
     int s = location.first, t = location.second;
     return bombing[s][t];
 }
-int Map::getVal(std::pair<int, int> location)
+int Map::getVal(std::pair<int, int> location, int id)
 {
     int s = location.first, t = location.second;
     int val = 0;
     if (!check(s, t) || bombing[s][t]) return 20000;
     if (ch[s][t] == '*' || ch[s][t] == '#') return 10000;
+    if (ch[s][t] >= '1' && ch[s][t] <= '4' && ch[s][t] != id + '0') return 10000;
+    if (ch[s][t] == 'A' || ch[s][t] == 'B') val -= 75;
     for (int i = -3; i <= 3; i++)
         for (int j = -3; j <= 3; j++) {
             int nowx = s + i, nowy = t + j;

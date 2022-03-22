@@ -2,6 +2,8 @@
 #define BOMB_H
 #include <utility>
 #include <ctime>
+#include "Map.h"
+#include "Player.h"
 class Bomb
 {
 private:
@@ -19,6 +21,5 @@ public:
     void overing(void);
     void startToOver(void);
     int getPower(void);
-    int getMaster(void);
 };
 #endif // BOMB_H

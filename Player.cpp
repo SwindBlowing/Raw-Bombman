@@ -38,7 +38,7 @@ void Player::speedUp(void)
 void Player::checkSpeed(void)
 {
     double nowTime = (double)clock();
-    if (speed < 150 && nowTime - startToSpeedUp > 5000) speed = 200;
+    if (speed < 200 && nowTime - startToSpeedUp > 5000) speed = 300;
 }
 bool Player::canMove(void)
 {
@@ -61,7 +61,7 @@ Player::Player(int x, int y, int id)
     location.second = y;
     isAlive = 1;
     power = 1;
-    speed = 200;
+    speed = 300;
     this->id = id;
     point = 0;
 }
@@ -107,10 +107,10 @@ bool Player::robotMove(void)
     extern Map M;
     extern Bomb b[20];
     if (!canMove()) return 0;
-    int val[4] = {0}, minn = 10000, standard = M.getVal(location);
+    int val[4] = {0}, minn = 10000, standard = M.getVal(location, id);
     for (int i = 0; i < 4; i++) {
         std::pair<int, int> nowLoc = {s + dx[i], t + dy[i]};
-        val[i] = M.getVal(nowLoc);
+        val[i] = M.getVal(nowLoc, id);
         minn = val[i] < minn ? val[i] : minn;
     }
     bool flag = 0;

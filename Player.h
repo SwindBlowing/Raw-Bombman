@@ -20,6 +20,7 @@ private:
     void putPower(void);
     void checkPower(void);
     void checkSpeed(void);
+    int getEnemy(void);
 public:
     Player(int x, int y, int id);
     void Move(int type);
@@ -37,6 +38,5 @@ public:
     void putBomb(void);
     bool robotMove(void);
     bool robotPutBomb(void);
-    int getEnemy(void);
 };
 #endif // CHARACTER_H

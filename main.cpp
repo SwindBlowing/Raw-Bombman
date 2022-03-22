@@ -108,14 +108,10 @@ void deal_with_timer(void)
     for (int i = 0; i < 20; i++) {
         if (b[i].hasOver()) {
             b[i].overing();
-            M.bombLeft(b[i].get_location(), b[i].getPower());
             display();
         }
         if (b[i].isExisted() && b[i].hasBombed()) {
             b[i].bombBomb();
-            b[i].startToOver();
-            int num = M.bombBomb(b[i].get_location(), b[i].getPower());
-            p[b[i].getMaster()].PointUp(num);
             display();
         }
     }
