@@ -65,7 +65,7 @@ void deal_with_input(void)
                             if (now) p[i].Move(dir), display();
                         }
                     }
-                    if (ch == ' ' && M.bombPut(p[i].get_location())) {
+                    if (ch == ' ' && p[i].canPutAgain() && M.bombPut(p[i].get_location())) {
                         bombNum = (bombNum + 1) % 20;
                         b[bombNum].init(p[i].get_location(), p[i].getPower(), i);
                         display();
@@ -80,7 +80,7 @@ void deal_with_input(void)
                             if (now) p[i].Move(dir), display();
                         }
                     }
-                    if (ch == 13 && M.bombPut(p[i].get_location())) {
+                    if (ch == 13 && p[i].canPutAgain() && M.bombPut(p[i].get_location())) {
                         bombNum = (bombNum + 1) % 20;
                         b[bombNum].init(p[i].get_location(), p[i].getPower(), i);
                         display();
@@ -118,6 +118,7 @@ void deal_with_timer(void)
 }
 void init(void)
 {
+    srand(time(NULL));
     mapping['a'] = mapping['j'] = 0;
     mapping['w'] = mapping['i'] = 1;
     mapping['d'] = mapping['l'] = 2;

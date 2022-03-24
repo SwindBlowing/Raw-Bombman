@@ -11,7 +11,7 @@ class Map
 {
 private:
     int n, m;
-    char ch[205][205], bombMap[205][205],preCh[205][205];
+    char ch[205][205], bombMap[205][205], preCh[205][205];
     bool bombing[205][205];
     int propsType[205][205];
     const int dx[4] = {0, -1, 0, 1}, dy[4] = {-1, 0, 1, 0};

@@ -13,7 +13,7 @@ private:
     bool isAlive;
     int id;
     int power;
-    double speed;
+    double speed; // which is actually "moveInterval"
     double startToPowerUp, lastMoveTime, startToSpeedUp, lastPutBomb;
     const int dx[4] = {0, -1, 0, 1}, dy[4] = {-1, 0, 1, 0};
     void speedUp(void);

@@ -24,7 +24,7 @@ void Bomb::init(std::pair<int, int> location, int power, int master)
 bool Bomb::hasBombed(void)
 {
     double nowTime = (double)clock();
-    return nowTime - putTime > 1000;
+    return nowTime - putTime > 2000;
 }
 std::pair<int, int> Bomb::get_location()
 {

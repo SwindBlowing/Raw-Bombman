@@ -2,7 +2,7 @@
 bool Player::canPutAgain(void)
 {
     double nowTime = (double)clock();
-    return nowTime - lastPutBomb > 2000;
+    return nowTime - lastPutBomb > 3000;
 }
 void Player::putBomb(void)
 {
@@ -126,7 +126,7 @@ bool Player::robotMove(void)
     int enemy = getEnemy();
     extern Player p[5];
     int dir = M.shortestPath(location, p[enemy].get_location());
-    if (dir >= 0 && val[dir] == minn) {
+    if (dir >= 0 && val[dir] == minn && !flag) {
         int now = M.movePlayer(id, dir, location);
         getBenefit(now);
         if (now) {
